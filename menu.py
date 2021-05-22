@@ -29,20 +29,20 @@ def imprimir():
 
 def imprimir_admin():
     
-    print("________________________")
+    print("________________________________")
     print("Bienvenido Administrador")
-    print("________________________")
+    print("________________________________")
     print()
     print("Opciones disponibles:")
-    print("1. Crear cuenta")
-    print("2. Modificar")
-    print("3. Eliminar")
+    print("1. Crear cliente o cuenta")
+    print("2. Modificar cliente o cuenta")
+    print("3. Eliminar cliente o cuenta")
     print("0. Salir")
     print()
 
 def eleccionCuentaCliente():
     print("_____________________________________")
-    print("Desea crea un cliente o una cuenta?: ")
+    print("Desea crear un cliente o una cuenta?: ")
     print("_____________________________________")
     print()
     print("Opciones disponibles:")
@@ -50,11 +50,31 @@ def eleccionCuentaCliente():
     print("2. Crear cuenta")
     print("0. Salir")
 
-def menu(miLogin):
+def eleccionCuentaClienteModi():
+    print("__________________________________________")
+    print("Desea modificar un cliente o una cuenta?: ")
+    print("__________________________________________")
+    print()
+    print("Opciones disponibles:")
+    print("1. Modificar cliente")
+    print("2. Modificar cuenta")
+    print("0. Salir")
+
+def eleccionCuentaClienteElimi():
+    print("_________________________________________")
+    print("Desea eliminar un cliente o una cuenta?: ")
+    print("_________________________________________")
+    print()
+    print("Opciones disponibles:")
+    print("1. ELiminar cliente")
+    print("2. Eliminar cuenta")
+    print("0. Salir")
+
+def menu(milogin):
     salir = 0
     opcion = 0
     while not salir:
-        if valid_admin(miLogin) == True:
+        if valid_admin(milogin) == True:
             imprimir_admin()
             opcion = pedirNumeroEntero()
             if opcion == 1:
@@ -67,9 +87,23 @@ def menu(miLogin):
                 else:
                   pass
             elif opcion == 2:
-               modiuser()
+                eleccionCuentaClienteModi()
+                opcion = pedirNumeroEntero()
+                if opcion == 1:
+                  modiuser()
+                elif opcion == 2:
+                  modiaccount()
+                else:
+                  pass
             elif opcion == 3:
-                eliminarusuario()
+                eleccionCuentaClienteElimi()
+                opcion = pedirNumeroEntero()
+                if opcion == 1:
+                  eliminarusuario()
+                elif opcion == 2:
+                  eliminarCuenta()
+                else:
+                  pass
             elif opcion == 0:
                 print("Vuelva pronto")
                 salir = True

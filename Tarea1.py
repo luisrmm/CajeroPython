@@ -7,11 +7,14 @@ def main():
     miLogin = Login()
 
     while loop == False:
-     if logueo(miLogin):
-        menu(miLogin)
-        loop = True
+     if  not validar_archivo(account_client):
+       crearadmin()
      else:
-       loop = False
+      if logueo(miLogin):
+          menu(miLogin)
+          loop = True
+      else:
+        loop = False
        
      
 if __name__ == "__main__":

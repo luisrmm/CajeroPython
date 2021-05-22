@@ -1,13 +1,20 @@
-from clases import Account, User
+from clases import Account, User, Login
 import os.path as path
 from tempfile import mkstemp
 from shutil import move
 from os import remove, close
 
 #Funciones login#
-archivo_cuenta = 'cuenta.txt'
-archivo_cliente = 'cliente.txt'
- 
+account_file = 'cuenta.txt'
+account_client = 'cliente.txt'
+
+def crearadmin():
+    try:
+        with open(account_client, "w") as archivo:
+         archivo.write("admin,admin,admin,admin,admin")
+    except Exception as e:
+        print(e)
+
 def logueo(credenciales):
     print("____________________________")
     print("Bienvenido al Banco Central")
@@ -17,7 +24,7 @@ def logueo(credenciales):
     print("\nDigite su contraseña: ")
     credenciales.password = input()
     
-    if userIntxt(credenciales):
+    if userIntxt(credenciales.user, credenciales.password):
         print("Usuario encontrado")
         return True
     else:
@@ -30,61 +37,84 @@ def valid_admin(credenciales):
         valid = True
     return valid
 
-def userIntxt(credenciales):
+def userIntxt(ident, passw):
     inttxt = False
     try:
-        archivo = open(archivo_cliente, "r")
+        archivo = open(account_client, "r")
         for linea in archivo:
             txt = linea
 
             x = txt.split(",")
             usuario = x[0]
             contra = x[1]
-            if (usuario == credenciales.user and contra == credenciales.password):
+            if (usuario == ident and contra == passw):
                 inttxt = True
                 break
             
         archivo.close()
         
-    except:
-        print("Error al abrir el archivo")   
+    except Exception as e:
+            print(e)
+    
+    return inttxt
+
+def validUserName(ident, passw):
+    inttxt = False
+    try:
+        archivo = open(account_client, "r")
+        for linea in archivo:
+            txt = linea
+
+            x = txt.split(",")
+            usuario = x[0]
+            contra = x[1]
+            if (usuario == ident or contra == passw ):
+                inttxt = True
+                break
+            
+        archivo.close()
+        
+    except Exception as e:
+            print(e)
     
     return inttxt
  
 #Funciones crud#
 #Crear cuenta y crear cliente#
 def crearuser():
+    action = False
     try:
-        currentUser = User()
-        archivo = open(archivo_cliente, "a")
-        print("-------------------------")
-        print("Creando Cliente")
-        print("-------------------------")
-        print("Digite el usuario: ")
-        currentUser.userName = input()
-        print("Digite la contrasena: ")
-        currentUser.passw = input()
-        print("Digite la cedula: ")
-        currentUser.id = input()
-        print("Digite el nombre: ")
-        currentUser.name = input()
-        print("Digite el apellido: ")
-        currentUser.lastname = input()
-        action = True
-        if not validar_archivo(archivo_cliente):
-            archivo = open(archivo_cliente, "w")
-            archivo.write(currentUser.userName+","+currentUser.passw+","+currentUser.id+","+currentUser.name+","+currentUser.lastname)   
-        else:
-            if validarIdentCliente(currentUser.id):
-                 print("El cliente ya esta registrado")
-                 action = False
+        while not action:
+            currentUser = User()
+            archivo = open(account_client, "a")
+            print("-------------------------")
+            print("Creando Cliente")
+            print("-------------------------")
+            print("Digite el usuario: ")
+            currentUser.userName = input()
+            print("Digite la contrasena: ")
+            currentUser.passw = input()
+            if validUserName(currentUser.userName, currentUser.passw):
+                print("Error usuario y contrasena ya han sido registrados")
+                action = False
             else:
-                archivo = open(archivo_cliente, "a")
-                archivo.write("\n"+currentUser.userName+","+currentUser.passw+","+currentUser.id+","+currentUser.name+","+currentUser.lastname) 
-        archivo.close()
-        return action
-    except:
-        print("Error al abrir el archivo")
+                print("Digite la cedula: ")
+                currentUser.id = pedirNumeroEntero()
+                if validarIdentCliente(currentUser.id):
+                    print("El cliente ya esta registrado")
+                    action = False
+                else:
+                    print("Digite el nombre: ")
+                    currentUser.name = input()
+                    print("Digite el apellido: ")
+                    currentUser.lastname = input()
+                    action = True
+                    archivo = open(account_client, "a")
+                    archivo.write("\n"+currentUser.userName+","+currentUser.passw+","+str(currentUser.id)+","+currentUser.name+","+currentUser.lastname) 
+            archivo.close()
+        #return action
+    except Exception as e:
+        print(e)
 
 def crearaccount():    
     try:
@@ -93,44 +123,42 @@ def crearaccount():
         print("Creando Cuenta")
         print("-------------------------")
         print("Digite el numero de cedula: ")
-        currentAccount.iden = input()
-        print("Digite el numero de cuenta: ")
-        currentAccount.num_account = input()
-        print("Digite el saldo inicial de la cuenta: ")
-        currentAccount.balance = input()
-        action = True
-        if not validar_archivo(archivo_cuenta):
-            archivo = open(archivo_cuenta, "w")
-            print("Desea agregar una segunda cuenta: 1 (Si) * (No)")
-            entrada = input()
-            c2 = "_"
-            na2 = "_"
-            if entrada == "1":
-                print("Digite el numero de cuenta #2: ")
-                na2 = input()
-                print("Digite el saldo inicial de cuenta #2: ")
-                c2  = input()
-            archivo.write(currentAccount.iden+","+currentAccount.num_account+","+currentAccount.balance+","+na2+","+c2)   
-                
+        currentAccount.iden = pedirNumeroEntero()
+        if not validarIdentCliente(currentAccount.iden):
+          print("El usuario no esta registrado como cliente")
         else:
-            if validarIdentCuenta(currentAccount.iden):
-                 print("El usuario ya posee una cuenta o mas cuentas")
-                 action = False
-            else:
-                archivo = open(archivo_cuenta, "a")
+            print("Digite el numero de cuenta: ")
+            currentAccount.num_account = input()
+            print("Digite el saldo inicial de la cuenta: ")
+            currentAccount.balance = pedirNumeroEntero()
+            action = True
+            if not validar_archivo(account_file):
+                archivo = open(account_file, "w")
                 print("Desea agregar una segunda cuenta: 1 (Si) * (No)")
                 entrada = input()
-                c2 ="_"
-                na2 = "_"
                 if entrada == "1":
                     print("Digite el numero de cuenta #2: ")
-                    na2 = input()
+                    currentAccount.num_account2 = input()
                     print("Digite el saldo inicial de cuenta #2: ")
-                    c2  = input()
-                archivo.write("\n"+currentAccount.iden+","+currentAccount.num_account+","+currentAccount.balance+","+na2+","+c2)   
-        return action
-    except:
-        print("Error al abrir el archivo")   
+                    currentAccount.balance2  = pedirNumeroEntero()
+                archivo.write(str(currentAccount.iden)+","+currentAccount.num_account+","+str(currentAccount.balance)+","+currentAccount.num_account2+","+str(currentAccount.balance2))      
+            else:
+                if validarIdentCuenta(currentAccount.iden):
+                    print("El usuario ya posee una o mas cuentas")
+                    action = False
+                else:
+                    archivo = open(account_file, "a")
+                    print("Desea agregar una segunda cuenta: 1 (Si) * (No)")
+                    entrada = input()
+                    if entrada == "1":
+                        print("Digite el numero de cuenta #2: ")
+                        currentAccount.num_account2 = input()
+                        print("Digite el saldo inicial de cuenta #2: ")
+                        currentAccount.balance2  = pedirNumeroEntero()
+                    archivo.write("\n"+str(currentAccount.iden)+","+currentAccount.num_account+","+str(currentAccount.balance)+","+currentAccount.num_account2+","+str(currentAccount.balance2))   
+            return action
+    except Exception as e:
+            print(e) 
  
 
 def validar_archivo(archivo):
@@ -139,41 +167,61 @@ def validar_archivo(archivo):
 def validarIdentCuenta(ident):
     inttxt = False
     try:
-        archivo = open(archivo_cuenta, "r")
+        archivo = open(account_file, "r")
         for linea in archivo:
             txt = linea
             x = txt.split(",")
             cedula = x[0]
-            if (cedula == ident):
+            if (cedula == str(ident)):
                 inttxt = True
                 break
             
         archivo.close()
         
-    except:
-        print("Error al abrir el archivo")   
+    except Exception as e:
+            print(e) 
     
     return inttxt
 
 def validarIdentCliente(ident):
     inttxt = False
     try:
-        archivo = open(archivo_cliente, "r")
+        archivo = open(account_client, "r")
         for linea in archivo:
             txt = linea
             x = txt.split(",")
             id = x[2]
-            if (id == ident):
+            if (id == str(ident)):
                 inttxt = True
                 break
             
         archivo.close()
         
-    except:
-        print("Error al abrir el archivo")   
+    except Exception as e:
+            print(e) 
     
     return inttxt
 
+def validarNumAccount1(num1):
+    inttxt = False
+    try:
+        archivo = open(account_file, "r")
+        for linea in archivo:
+            txt = linea
+            x = txt.split(",")
+            account1 = x[1]
+            
+            if (account1 == str(num1)):
+                inttxt = True
+                break
+            
+        archivo.close()
+    except Exception as e:
+            print(e)  
+    
+    return inttxt
+            
+    
 #Modoficar cliente y cuenta#
 
 def modiuser():
@@ -196,19 +244,16 @@ def modiuser():
             updateUser.name = input()
             print("Digite el apellido: ")
             updateUser.lastname = input()
-            replace(updateUser)
-        
-        
+            replaceUser(updateUser)
     except Exception as e:
         print(e)
-        print("Error al abrir el archivo")   
-    
-def replace(updateUser):
-    #archivo = open(archivo_cliente, "r")
+            
+def replaceUser(updateUser):
+    #archivo = open(account_client, "r")
     #Create temp file
     fh, abs_path = mkstemp()
     with open(abs_path,'w') as new_file:
-        with open(archivo_cliente) as old_file:
+        with open(account_client) as old_file:
             for line in old_file:
                 txt = line
                 x = txt.split(",")
@@ -220,19 +265,63 @@ def replace(updateUser):
                     new_file.write(line)
     close(fh)
     #Remove original file
-    remove(archivo_cliente)
+    remove(account_client)
     #Move new file
-    move(abs_path, archivo_cliente)
+    move(abs_path, account_client)
+    #archivo.close()
+
+def modiaccount():
+    
+    try:
+        updateAccount = Account()
+        print("-------------------------")
+        print("Modificando cuenta")
+        print("-------------------------\n")
+        print("Digite el numero de cedula: ")
+        updateAccount.iden = input()
+        if not validarIdentCuenta(updateAccount.iden):
+            print("El cliente no existe")
+        else:
+            print("Digite el numero de la cuenta ")
+            updateAccount.num_account = input()
+            print("Digite el saldo: ")
+            updateAccount.balance = input()
+            print("Digite el nombre de la cuenta: ")
+            updateAccount.num_account2 = input()
+            print("Digite el saldo: ")
+            updateAccount.balance2 = input()
+            replaceAccount(updateAccount)
+    except Exception as e:
+        print(e)
+           
+def replaceAccount(updateAccount):
+    #archivo = open(account_client, "r")
+    #Create temp file
+    fh, abs_path = mkstemp()
+    with open(abs_path,'w') as new_file:
+        with open(account_file) as old_file:
+            for line in old_file:
+                txt = line
+                x = txt.split(",")
+                id = x[0]
+                if (id == updateAccount.iden):
+                    newline =updateAccount.iden+","+updateAccount.num_account+","+updateAccount.balance+","+updateAccount.num_account2+","+updateAccount.balance2
+                    new_file.write(newline+"\n")
+                else:
+                    new_file.write(line)
+    close(fh)
+    #Remove original file
+    remove(account_file)
+    #Move new file
+    move(abs_path, account_file)
     #archivo.close()
 
 #Eliminar cleinte y cuenta
 
-def borrar(ident):
-    #archivo = open(archivo_cliente, "r")
-    #Create temp file
+def borrarcliente(ident):
     fh, abs_path = mkstemp()
     with open(abs_path,'w') as new_file:
-        with open(archivo_cliente) as old_file:
+        with open(account_client) as old_file:
             for line in old_file:
                 txt = line
                 x = txt.split(",")
@@ -242,9 +331,27 @@ def borrar(ident):
                     
     close(fh)
     #Remove original file
-    remove(archivo_cliente)
+    remove(account_client)
     #Move new file
-    move(abs_path, archivo_cliente)
+    move(abs_path, account_client)
+    #archivo.close()
+
+def borrarcuenta(ident):
+    fh, abs_path = mkstemp()
+    with open(abs_path,'w') as new_file:
+        with open(account_file) as old_file:
+            for line in old_file:
+                txt = line
+                x = txt.split(",")
+                id = x[0]
+                if (id != ident):
+                   new_file.write(line)
+                    
+    close(fh)
+    #Remove original file
+    remove(account_file)
+    #Move new file
+    move(abs_path, account_file)
     #archivo.close()
 
 def eliminarusuario():
@@ -258,9 +365,37 @@ def eliminarusuario():
         if not validarIdentCliente(ident):
             print("El cliente no existe")
         else:
-            borrar(ident)
+            borrarcliente(ident)
         
         
     except Exception as e:
         print(e)
-        print("Error al abrir el archivo")
+
+def eliminarCuenta():
+    try:
+        
+        print("-------------------------")
+        print("Elimando cuenta")
+        print("-------------------------\n")
+        print("Digite el numero de cedula: ")
+        ident = input()
+        if not validarIdentCuenta(ident):
+            print("El cliente no existe")
+        else:
+            borrarcuenta(ident)
+        
+        
+    except Exception as e:
+        print(e)
+        
+def pedirNumeroEntero():
+    correcto=False
+    num=0
+    while(not correcto):
+        try:
+            num = int(input(""))
+            correcto=True
+        except ValueError:
+            print("Error, digite numeros enteros\nDigite el numero de cedula:")
+     
+    return num
